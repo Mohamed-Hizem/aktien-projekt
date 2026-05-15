@@ -31,14 +31,6 @@ st.markdown("""
         border-right: 1px solid #1E2A45;
     }
 
-    /* Always show sidebar toggle arrow */
-    [data-testid="collapsedControl"] {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        color: #4DFFB4 !important;
-    }
-
     /* Title */
     .main-title {
         font-family: 'Space Mono', monospace;
@@ -118,12 +110,7 @@ st.markdown("""
     /* Hide streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    
-    /* Keep sidebar toggle visible */
-    [data-testid="stHeader"] {visibility: hidden;}
-    section[data-testid="stSidebarCollapsedControl"] {visibility: visible !important;}
-    [data-testid="collapsedControl"] {visibility: visible !important; display: flex !important;}
-    
+
     /* Metric styling */
     [data-testid="stMetric"] {
         background: #0F1525;
@@ -140,27 +127,6 @@ st.markdown("""
     /* Divider */
     hr {
         border-color: #1E2A45;
-    }
-
-    /* ── MOBILE RESPONSIVE ── */
-    @media (max-width: 768px) {
-        .main-title {
-            font-size: 1.4rem !important;
-            letter-spacing: -0.5px;
-        }
-        .sub-title {
-            font-size: 0.8rem !important;
-            margin-bottom: 1rem !important;
-        }
-        .kpi-card {
-            padding: 0.8rem !important;
-        }
-        .kpi-value {
-            font-size: 1.3rem !important;
-        }
-        .kpi-label {
-            font-size: 0.65rem !important;
-        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -423,7 +389,7 @@ with col1:
         )
         st.plotly_chart(fig2, use_container_width=True)
 
-# ── VOLATILITY CHART ──────────────────────────────────────────────────────────
+# ── AVERAGE PRICE CHART ───────────────────────────────────────────────────────
 with col2:
     st.markdown('<p class="section-header">Average Price by Stock</p>', unsafe_allow_html=True)
 
