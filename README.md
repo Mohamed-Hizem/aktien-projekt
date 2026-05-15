@@ -82,4 +82,4 @@ The Jupyter notebook `analyse-checkpoint.ipynb` covers the full pipeline:
 
 ## 👤 Author
 
-**Mohamed** — Data Science Portfolio Project
+**Mohamed HIZEM** — Data Science Portfolio Project
