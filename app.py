@@ -150,6 +150,17 @@ st.markdown("""
             flex-wrap: wrap !important;
         }
     }
+ /* Force sidebar toggle button to always show */
+    [data-testid="collapsedControl"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    button[kind="header"] {
+        display: block !important;
+        visibility: visible !important;
+    }   
 </style>
 """, unsafe_allow_html=True)
 
