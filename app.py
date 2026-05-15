@@ -118,7 +118,7 @@ st.markdown("""
     /* Hide streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    
     /* Keep sidebar toggle visible */
     [data-testid="stHeader"] {visibility: hidden;}
     section[data-testid="stSidebarCollapsedControl"] {visibility: visible !important;}
