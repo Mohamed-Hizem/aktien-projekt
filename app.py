@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="Stock Market Analysis",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="auto"
+    initial_sidebar_state="expanded"
 )
 
 # ── CUSTOM CSS ───────────────────────────────────────────────────────────────
@@ -29,6 +29,14 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background-color: #0F1525;
         border-right: 1px solid #1E2A45;
+    }
+
+    /* Always show sidebar toggle arrow */
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #4DFFB4 !important;
     }
 
     /* Title */
@@ -57,6 +65,7 @@ st.markdown("""
         padding: 1.5rem;
         text-align: center;
         transition: border-color 0.3s;
+        margin-bottom: 0.5rem;
     }
 
     .kpi-card:hover {
@@ -128,7 +137,8 @@ st.markdown("""
     hr {
         border-color: #1E2A45;
     }
-/* ── MOBILE RESPONSIVE ── */
+
+    /* ── MOBILE RESPONSIVE ── */
     @media (max-width: 768px) {
         .main-title {
             font-size: 1.4rem !important;
@@ -136,6 +146,7 @@ st.markdown("""
         }
         .sub-title {
             font-size: 0.8rem !important;
+            margin-bottom: 1rem !important;
         }
         .kpi-card {
             padding: 0.8rem !important;
@@ -146,63 +157,56 @@ st.markdown("""
         .kpi-label {
             font-size: 0.65rem !important;
         }
-        [data-testid="stHorizontalBlock"] {
-            flex-wrap: wrap !important;
-        }
     }
- /* Force sidebar toggle button to always show */
-    [data-testid="collapsedControl"] {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
-
-    button[kind="header"] {
-        display: block !important;
-        visibility: visible !important;
-    }   
 </style>
 """, unsafe_allow_html=True)
 
 # ── DATA LOADING ─────────────────────────────────────────────────────────────
 @st.cache_data
 def load_data():
-    db_path = 'db/aktien.db'
-    
-    if not os.path.exists(db_path):
-        st.error("❌ aktien.db not found in db/ folder. See README.")
-        st.stop()
+    """Load data from SQLite database or Excel as fallback"""
 
-    conn = sqlite3.connect(db_path)
+    # Try SQLite first
+    db_paths = ['db/aktien.db', '../db/aktien.db', 'aktien.db']
+    for db_path in db_paths:
+        if os.path.exists(db_path):
+            conn = sqlite3.connect(db_path)
+            df = pd.read_sql('SELECT * FROM kurse', conn)
+            conn.close()
+            df['datum'] = pd.to_datetime(df['datum'], utc=True).dt.tz_localize(None)
+            return df
 
-    # Main price data
-    df = pd.read_sql('''
-        SELECT datum, ticker, open_kurs, hoch, tief, schluss, volumen
-        FROM kurse
-        ORDER BY ticker, datum
-    ''', conn)
+    # Fallback: Excel file
+    excel_paths = [
+        'exports/aktien_dashboard_v2.xlsx',
+        'aktien_dashboard.xlsx',
+        'exports/aktien_dashboard.xlsx'
+    ]
+    for excel_path in excel_paths:
+        if os.path.exists(excel_path):
+            df = pd.read_excel(excel_path, sheet_name='RawData')
+            df.columns = [c.lower() for c in df.columns]
+            if 'date' in df.columns:
+                df.rename(columns={'date': 'datum', 'close': 'schluss'}, inplace=True)
+            df['datum'] = pd.to_datetime(df['datum'], utc=True).dt.tz_localize(None)
+            return df
 
-    # Metrics table (MA, volatility, daily return)
-    df_kz = pd.read_sql('''
-        SELECT datum, ticker, MA_7, MA_30, MA_90, rendite, volatilitaet
-        FROM kennzahlen
-        ORDER BY ticker, datum
-    ''', conn)
-
-    conn.close()
-
-    df['datum'] = pd.to_datetime(df['datum'], utc=True).dt.tz_localize(None)
-    df_kz['datum'] = pd.to_datetime(df_kz['datum'], utc=True).dt.tz_localize(None)
-
-    # Merge so charts can use MAs directly
-    df = df.merge(df_kz, on=['datum', 'ticker'], how='left')
-
-    return df
+    # Demo data if nothing found
+    st.warning("⚠️ No database found. Showing demo data. Place aktien.db in db/ folder.")
+    import numpy as np
+    dates = pd.date_range('2020-01-01', '2024-12-31', freq='B')
+    tickers = ['AAPL', 'MSFT', 'TSLA', 'SAP.DE']
+    start_prices = {'AAPL': 72, 'MSFT': 152, 'TSLA': 28, 'SAP.DE': 109}
+    records = []
+    for ticker in tickers:
+        price = start_prices[ticker]
+        for date in dates:
+            price *= (1 + np.random.normal(0.0003, 0.02))
+            records.append({'datum': date, 'ticker': ticker, 'schluss': round(price, 2)})
+    return pd.DataFrame(records)
 
 
 df = load_data()
-st.sidebar.success(f"✅ DB loaded: {len(df):,} rows")
-st.sidebar.caption(f"Tickers: {', '.join(df['ticker'].unique())}")
 
 # Normalize column names
 if 'close' in df.columns and 'schluss' not in df.columns:
@@ -256,7 +260,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown('<p style="color:#5A6A8A;font-size:0.75rem;text-align:center;">IBM Data Science Project<br>Built with Python + Streamlit</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#5A6A8A;font-size:0.75rem;text-align:center;">Mohamed\'s Data Science Project<br>Built with Python + Streamlit</p>', unsafe_allow_html=True)
 
 
 # ── FILTER DATA ───────────────────────────────────────────────────────────────
@@ -273,7 +277,7 @@ filtered = df[mask].copy()
 
 # ── HEADER ────────────────────────────────────────────────────────────────────
 st.markdown('<h1 class="main-title">STOCK MARKET ANALYSIS</h1>', unsafe_allow_html=True)
-st.markdown('<p class="sub-title">Interactive Dashboard · 2020–2024 · Mohamed Hizem Data Science Project</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-title">Interactive Dashboard · 2020–2024 · Mohamed\'s Data Science Project</p>', unsafe_allow_html=True)
 
 # ── KPI CARDS ─────────────────────────────────────────────────────────────────
 st.markdown('<p class="section-header">Key Metrics</p>', unsafe_allow_html=True)
@@ -323,13 +327,16 @@ for ticker in selected_tickers:
         ))
 
     elif chart_type == "Area Chart":
+        r = int(color[1:3], 16)
+        g = int(color[3:5], 16)
+        b = int(color[5:7], 16)
         fig.add_trace(go.Scatter(
             x=t_data['datum'],
             y=t_data['schluss'],
             name=ticker,
             fill='tozeroy',
             line=dict(color=color, width=2),
-            fillcolor=f"rgba({int(color[1:3], 16)}, {int(color[3:5], 16)}, {int(color[5:7], 16)}, 0.1)",
+            fillcolor=f"rgba({r},{g},{b},0.1)",
             hovertemplate=f"<b>{ticker}</b><br>Date: %{{x|%Y-%m-%d}}<br>Price: $%{{y:.2f}}<extra></extra>"
         ))
 
@@ -472,6 +479,6 @@ if show_data:
 st.markdown("---")
 st.markdown("""
 <p style="text-align:center;color:#5A6A8A;font-size:0.75rem;font-family:'Space Mono',monospace;">
-MOHAMED · STOCK MARKET ANALYSIS · PYTHON + SQL + STREAMLIT + PLOTLY
+HIZEM · STOCK MARKET ANALYSIS · PYTHON + SQL + STREAMLIT + PLOTLY
 </p>
 """, unsafe_allow_html=True)
