@@ -119,7 +119,11 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-
+    /* Keep sidebar toggle visible */
+    [data-testid="stHeader"] {visibility: hidden;}
+    section[data-testid="stSidebarCollapsedControl"] {visibility: visible !important;}
+    [data-testid="collapsedControl"] {visibility: visible !important; display: flex !important;}
+    
     /* Metric styling */
     [data-testid="stMetric"] {
         background: #0F1525;
