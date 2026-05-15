@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="Stock Market Analysis",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # ── CUSTOM CSS ───────────────────────────────────────────────────────────────
@@ -127,6 +127,28 @@ st.markdown("""
     /* Divider */
     hr {
         border-color: #1E2A45;
+    }
+/* ── MOBILE RESPONSIVE ── */
+    @media (max-width: 768px) {
+        .main-title {
+            font-size: 1.4rem !important;
+            letter-spacing: -0.5px;
+        }
+        .sub-title {
+            font-size: 0.8rem !important;
+        }
+        .kpi-card {
+            padding: 0.8rem !important;
+        }
+        .kpi-value {
+            font-size: 1.3rem !important;
+        }
+        .kpi-label {
+            font-size: 0.65rem !important;
+        }
+        [data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -245,7 +267,7 @@ st.markdown('<p class="sub-title">Interactive Dashboard · 2020–2024 · Mohame
 # ── KPI CARDS ─────────────────────────────────────────────────────────────────
 st.markdown('<p class="section-header">Key Metrics</p>', unsafe_allow_html=True)
 
-kpi_cols = st.columns(4)
+kpi_cols = st.columns([1,1,1,1], gap="small")
 
 for i, ticker in enumerate(selected_tickers[:4]):
     t_data = filtered[filtered['ticker'] == ticker]
