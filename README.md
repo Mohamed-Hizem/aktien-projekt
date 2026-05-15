@@ -6,7 +6,7 @@ An interactive stock market dashboard built with Python, SQL, Streamlit, and Plo
 
 ## 🚀 Live Demo
 
-👉 [Click here to open the dashboard](#) *(replace with your Streamlit Cloud link)*
+👉 👉 [Click here to open the dashboard](https://mohamedhizem-aktien-dashboard.streamlit.app/)
 
 ---
 
